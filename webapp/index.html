@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="a+a+b"></p>
+		<p>Term <input type="Term" id="Input" value="2^3+2^2"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -15,6 +15,7 @@
 
 // Open Issues:
 // Parser: no exponents for variables
+// 2abcd^2 is interpreted incorectly as (2abcd)^2 = 4a^2b^2c^2d^2
 		
 		class termElement {
 			constructor(string) {
@@ -69,7 +70,26 @@
 			operation(operand1, operation, operand2) {
 				switch(operation) {
 					case '^':
-						this.coefficient = Math.pow(this.operand1.coefficient,this.operand2.coefficient);
+						if (operand2.variableList.length == 0) {
+							// power of 0 -> result = 1
+							if (operand2.coefficient == 0) {
+								this.coefficient = 1;
+								this.variableList = [];
+								this.exponentList = [];
+							} 
+							else {
+								this.coefficient = Math.pow(operand1.coefficient,operand2.coefficient);
+								if (operand1.variableList.length > 0) {
+									for (let i = 0; i < operand1.variableList.length; i++) {
+										this.variableList.push(operand1.variableList[i]);
+										this.exponentList.push(operand1.exponentList[i] * operand2.coefficient);
+									}
+								}
+							}
+						}
+						else {
+							// operand2 contains variable -> error / nothing to calculate
+						}
 						break;
 					case '*':
 					case '/':
@@ -128,13 +148,16 @@
 					case '+':
 					case '-':
 						if (operand1.variableList.length == operand2.variableList.length) {
-							let success = true;
+							// variables and exponents of operand1 and operand2 are the same?
+							let varExEqual = true;
 							let i = 0;
-							while (i < operand1.variableList.length && success) {
-								success = (operand1.variableList[i] == operand2.variableList[i]);
+							while (i < operand1.variableList.length && varExEqual) {
+								varExEqual = (operand1.variableList[i] == operand2.variableList[i] &&
+										   operand1.exponentList[i] == operand2.exponentList[i]);
 								i++;
 							}
-							if (success) {
+							// variables and exponents of operand1 and operand2 are the same => calculate result
+							if (varExEqual) {
 								if (operation == '+') {
 									this.coefficient = operand1.coefficient + operand2.coefficient;
 								}
@@ -199,9 +222,9 @@
 				function compute_operators(list, start, end) {
 
 				// excution order: power of, multiplying / deviding, plus / minus			
-				let operators = [RegExp('[^]'), RegExp('[\/\*]'), RegExp('[+-]')];
+				let operators = [RegExp('^'), RegExp('[\/\*]'), RegExp('[+-]')];
 	
-				for (let op = 1; op < operators.length; op++){
+				for (let op = 0; op < operators.length; op++){
 					// start with first operator
 					let i = start+1;
 					
