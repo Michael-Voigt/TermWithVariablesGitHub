@@ -1,0 +1,263 @@
+<!DOCTYPE html >
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+		<meta charset="UTF-8">
+		<title>Auswerterich</title>
+	</head>
+	<body>
+		<p>Term <input type="Term" id="Input" value="a+a+b"></p>
+		<br>
+		<button onclick="calculate()">Calculate</button>
+		<p>Result</p>
+		<p id="Result"></p>
+		<script>
+
+// Open Issues:
+//
+		
+		class termElement {
+			constructor(string) {
+				this.coefficient = 0;
+				this.exponentList = [];
+				this.variableList = [];
+				
+				const number = RegExp('[1-9.]');
+				const letter = RegExp('[a-zA-Z]');
+				
+				let l = string.length;
+				
+				// Determine coefficient
+				let i = 0;
+				while (i<l && number.test(string[i])) {
+					i++;
+				}
+				this.coefficient = Number(string.substring(0, i))	
+				
+				// Determine variables
+				let v = i;
+				while (i<l && letter.test(string[i])) { 
+					this.exponentList.push(1);
+					this.variableList.push(string[i])
+					i++; 
+				}
+				// sort variables works only if all exponents = 1
+				this.variableList.sort();
+				// coefficient = 1 for variables without coefficient
+				if (this.coefficient == 0 && this.variableList.length > 0){
+					this.coefficient = 1;
+				}
+				
+			}
+			convertToString() {
+				let string = [];
+				// No coefficient if there are variables and the coefficient = 1
+				if (this.coefficient != 1 || this.variableList.length == 0) {
+					string = this.coefficient;
+				}
+				
+				for (let i=0; i < this.variableList.length; i++) {
+					string += this.variableList[i];
+					if (this.exponentList[i] != 1) {
+						string +='^';
+						string +=this.exponentList[i];						
+					}
+				}
+				return(string);
+			}
+			
+			operation(operand1, operation, operand2) {
+				switch(operation) {
+					case '^':
+						this.coefficient = Math.pow(this.operand1.coefficient,this.operand2.coefficient);
+						break;
+					case '*':
+					case '/':
+						if (operation =='*') {
+							this.coefficient = operand1.coefficient * operand2.coefficient;
+						}
+						else {
+							this.coefficient = operand1.coefficient / operand2.coefficient;	
+						}
+		
+						let i1 = 0;
+						let i2 = 0;
+						while (i1 < operand1.variableList.length && i2 < operand2.variableList.length) {
+							// same variable -> add / substract exponents
+							if (operand1.variableList[i1] == operand2.variableList[i2]) {
+								this.variableList.push(operand1.variableList[i1]);
+								if (operation =='*') {
+									this.exponentList.push(operand1.exponentList[i1] + operand2.exponentList[i2]);
+								}
+								else {
+									this.exponentList.push(operand1.exponentList[i1] - operand2.exponentList[i2]);
+								}
+								i1++;
+								i2++;
+							} 
+							// copy variable of operand1
+							else if (operand1.variableList[i1] < operand2.variableList[i2]) {
+								this.variableList.push(operand1.variableList[i1]);
+								this.exponentList.push(operand1.exponentList[i1]);
+								i1++;
+							}
+							// copy variable of operand2
+							else {
+								this.variableList.push(operand2.variableList[i2]);
+								this.exponentList.push(operand2.exponentList[i2]);
+								i2++;
+							}
+						}
+						// copy remaining variables of operand1
+						if (i2 == operand2.variableList.length) {
+							while (i1 < operand1.variableList.length) {
+								this.variableList.push(operand1.variableList[i1]);
+								this.exponentList.push(operand1.exponentList[i1]);
+								i1++;
+							}
+						}
+						// copy remaining variables of operand2
+						else {
+							while (i2 < operand2.variableList.length) {
+								this.variableList.push(operand2.variableList[i2]);
+								this.exponentList.push(operand2.exponentList[i2]);
+								i2++;	
+							}
+						}
+						break;
+					case '+':
+					case '-':
+						if (operand1.variableList.length == operand2.variableList.length) {
+							let success = true;
+							let i = 0;
+							while (i < operand1.variableList.length && success) {
+								success = (operand1.variableList[i] == operand2.variableList[i]);
+								i++;
+							}
+							if (success) {
+								if (operation == '+') {
+									this.coefficient = operand1.coefficient + operand2.coefficient;
+								}
+								else {
+									this.coefficient = operand1.coefficient - operand2.coefficient;
+								}
+								// copy variables and exponents to result
+								for (let j = 0; j < operand1.variableList.length; j++) {
+									this.variableList.push(operand1.variableList[j]);
+									this.exponentList.push(operand1.exponentList[j]);
+								}
+							}
+						}
+						break;
+				}
+			}
+		}
+		
+		class term {
+			constructor(input) {
+				this.list = [];
+				
+				const regex = RegExp('[+-\/\*^()]');
+				
+				let l = input.length;
+				let j = 0;
+				let i = 0;
+				
+				for (i = 0; i < l; i++) {
+					if (regex.test(input[i])) {
+						if (i!=j) {
+//							this.list.push(input.substring(j, i));
+							this.list.push(new termElement(input.substring(j, i)));
+						}
+						this.list.push(input[i]);
+						j = i + 1;
+					}
+				}
+				if (i!=j) {
+//					list.push(Number(input.substring(j, l)));
+					this.list.push(new termElement(input.substring(j, l)));
+				}
+			}
+			convertToString() {
+				let string = [];
+				for (let i=0; i < this.list.length; i++) {
+					if (typeof(this.list[i])=='string') {
+						string += this.list[i];
+					}
+					else {
+						string += this.list[i].convertToString();
+					}
+				}
+				return(string);
+			}
+			
+			calculate() {
+				compute_brackets(this.list, 0);
+				
+				function compute_operators(list, start, end) {
+
+				// excution order: power of, multiplying / deviding, plus / minus			
+				let operators = [RegExp('[^]'), RegExp('[\/\*]'), RegExp('[+-]')];
+	
+				for (let op = 1; op < operators.length; op++){
+					// start with first operator
+					let i = start+1;
+					let result = new termElement('0');
+					
+					while (i<end){
+						// execute only operators selected by parameter operators
+						if (operators[op].test(list[i])) {
+							// calculate result = operand1 operation operand2
+							result.operation(list[i-1], list[i], list[i+1]);
+							if (result.coefficient != 0) {
+								// replace operand1, operator and operand2 by result
+								list.splice(i-1,3,result);
+								end -=2;
+							}
+							else {
+								i+=2;
+							}
+						}
+						else {
+						// next operator
+						i+=2;
+						}
+					}
+				}
+			}
+
+				function compute_brackets(List, start) {
+				let i = start;
+				
+				while (i < List.length && List[i]!=')') {
+					if (List[i] == '(') { 
+						compute_brackets(List, i+1);
+						// remove brackets
+						List.splice(i+2, 1);
+						List.splice(i,1);						
+					}
+					i++;
+				}
+				compute_operators(List, start, i-1);
+				}
+			}
+		}
+		
+		function calculate() {
+			Term = new term(Input.value);
+			Term.calculate();
+			output(Term.convertToString());
+
+			// Result = new termElement('0');
+			// Operand1 = new termElement('2ac');
+			// Operand2 = new termElement('2ad');
+			// Result.operation(Operand1, '*', Operand2);
+			// output(Result.convertToString());			
+		}
+			
+		function output(string) {
+			document.getElementById("Result").innerHTML = string;
+		}		
+		</script>
+	</body>
+</html>
