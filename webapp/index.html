@@ -14,7 +14,7 @@
 		<script>
 
 // Open Issues:
-//
+// Parser: no exponents for variables
 		
 		class termElement {
 			constructor(string) {
@@ -192,7 +192,9 @@
 			}
 			
 			calculate() {
+				console.log('----- Start of Calculate -----');
 				compute_brackets(this.list, 0);
+				console.log('----- End of Calculate -----');
 				
 				function compute_operators(list, start, end) {
 
@@ -202,17 +204,19 @@
 				for (let op = 1; op < operators.length; op++){
 					// start with first operator
 					let i = start+1;
-					let result = new termElement('0');
 					
 					while (i<end){
+						let result = new termElement('0');
 						// execute only operators selected by parameter operators
 						if (operators[op].test(list[i])) {
+							console.log('Compute: ' + list[i-1].convertToString(), list[i], list[i+1].convertToString());
 							// calculate result = operand1 operation operand2
 							result.operation(list[i-1], list[i], list[i+1]);
 							if (result.coefficient != 0) {
 								// replace operand1, operator and operand2 by result
 								list.splice(i-1,3,result);
 								end -=2;
+								console.log('Result: ' + list[i-1].convertToString());
 							}
 							else {
 								i+=2;
