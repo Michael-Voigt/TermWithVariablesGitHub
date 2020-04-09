@@ -54,9 +54,19 @@
 			}
 			convertToString() {
 				let string = [];
-				// No coefficient if there are variables and the coefficient = 1
-				if (this.coefficient != 1 || this.variableList.length == 0) {
-					string = this.coefficient;
+				// if there are no variables, always output coefficient
+				if (this.variableList.length == 0) {
+					string = this.coefficient;				
+				}
+				else {
+					// if there are variables and the coefficient = -1, just ouput -
+					if (this.coefficient == -1) {
+						string = '-';	
+					} 
+					// if there are variables and the coefficient = 1, don't output the coefficient
+					else if (this.coefficient != 1) {
+						string = this.coefficient;
+					}
 				}
 				
 				for (let i=0; i < this.variableList.length; i++) {
@@ -287,7 +297,7 @@
 							// execute only operators selected by parameter operators
 							if (operators[op].test(list[i])) {
 								if (op == 2) {
-									// let success = false;
+									// add all operands in list
 									let j = i + 1;
 									while (j <= end) {
 										console.log('Add i=' + i + ': ' + list[i-1].convertToString() + ' j=' + j + ': ' + list[j].convertToString());
