@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="2^3+2^2"></p>
+		<p>Term <input type="Term" id="Input" value="a+b+a+c+a"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -15,7 +15,9 @@
 
 // Open Issues:
 // Parser: no exponents for variables
-// 2abcd^2 is interpreted incorectly as (2abcd)^2 = 4a^2b^2c^2d^2
+// 2abcd^2 is interpreted incorrectly as (2abcd)^2 = 4a^2b^2c^2d^2
+// line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
+// line 228: // change to let op = 0 to process power of
 		
 		class termElement {
 			constructor(string) {
@@ -165,9 +167,9 @@
 									this.coefficient = operand1.coefficient - operand2.coefficient;
 								}
 								// copy variables and exponents to result
-								for (let j = 0; j < operand1.variableList.length; j++) {
-									this.variableList.push(operand1.variableList[j]);
-									this.exponentList.push(operand1.exponentList[j]);
+								for (let h = 0; h < operand1.variableList.length; h++) {
+									this.variableList.push(operand1.variableList[h]);
+									this.exponentList.push(operand1.exponentList[h]);
 								}
 							}
 						}
@@ -201,6 +203,7 @@
 					this.list.push(new termElement(input.substring(j, l)));
 				}
 			}
+			
 			convertToString() {
 				let string = [];
 				for (let i=0; i < this.list.length; i++) {
@@ -218,73 +221,132 @@
 				console.log('----- Start of Calculate -----');
 				compute_brackets(this.list, 0);
 				console.log('----- End of Calculate -----');
-				
-				function compute_operators(list, start, end) {
-
-				// excution order: power of, multiplying / deviding, plus / minus			
-				let operators = [RegExp('^'), RegExp('[\/\*]'), RegExp('[+-]')];
-	
-				for (let op = 0; op < operators.length; op++){
-					// start with first operator
-					let i = start+1;
-					
-					while (i<end){
-						let result = new termElement('0');
-						// execute only operators selected by parameter operators
-						if (operators[op].test(list[i])) {
-							console.log('Compute: ' + list[i-1].convertToString(), list[i], list[i+1].convertToString());
-							// calculate result = operand1 operation operand2
-							result.operation(list[i-1], list[i], list[i+1]);
-							if (result.coefficient != 0) {
-								// replace operand1, operator and operand2 by result
-								list.splice(i-1,3,result);
-								end -=2;
-								console.log('Result: ' + list[i-1].convertToString());
-							}
-							else {
-								i+=2;
-							}
-						}
-						else {
-						// next operator
-						i+=2;
-						}
-					}
-				}
-			}
 
 				function compute_brackets(List, start) {
-				let i = start;
-				
-				while (i < List.length && List[i]!=')') {
-					if (List[i] == '(') { 
-						compute_brackets(List, i+1);
-						// remove brackets
-						List.splice(i+2, 1);
-						List.splice(i,1);						
+					let i = start;
+					
+					while (i < List.length && List[i]!=')') {
+						if (List[i] == '(') { 
+							compute_brackets(List, i+1);
+							// remove brackets
+							List.splice(i+2, 1);
+							List.splice(i,1);						
+						}
+						i++;
 					}
-					i++;
+					compute_operators(List, start, i-1);
 				}
-				compute_operators(List, start, i-1);
+				
+				function compute_operators_old(list, start, end) {
+
+					// excution order: power of, multiplying / deviding, plus / minus			
+					let operators = [RegExp('\^'), RegExp('[\/\*]'), RegExp('[+-]')];
+		
+					// change to let op = 0 to process power of
+					for (let op = 1; op < operators.length; op++){
+						// start with first operator
+						let i = start+1;
+						
+						while (i<end){
+							let result = new termElement('0');
+							// execute only operators selected by parameter operators
+							if (operators[op].test(list[i])) {
+								console.log('Compute: ' + list[i-1].convertToString(), list[i], list[i+1].convertToString());
+								// calculate result = operand1 operation operand2
+								result.operation(list[i-1], list[i], list[i+1]);
+								if (result.coefficient != 0) {
+									// replace operand1, operator and operand2 by result
+									list.splice(i-1,3,result);
+									end -=2;
+									console.log('Result: ' + list[i-1].convertToString());
+								}
+								else {
+									i+=2;
+								}
+							}
+							else {
+							// next operator
+							i+=2;
+							}
+						}
+					}
+				}	
+
+				function compute_operators(list, start, end) {
+	
+					// excution order: power of, multiplying / deviding, plus / minus			
+					let operators = [RegExp('\^'), RegExp('[\/\*]'), RegExp('[+-]')];
+		
+					// change to let op = 0 to process power of
+					for (let op = 1; op < operators.length; op++){
+						// start with first operator
+						let i = start + 1;
+						
+						while (i < end){
+							let result = new termElement('0');
+							// execute only operators selected by parameter operators
+							if (operators[op].test(list[i])) {
+								if (op == 2) {
+									// let success = false;
+									let j = i + 1;
+									while (j <= end) {
+										console.log('Add i=' + i + ': ' + list[i-1].convertToString() + ' j=' + j + ': ' + list[j].convertToString());
+										// calculate result = operand1 operation operand2
+										result.operation(list[i-1], list[j-1], list[j]);
+										// if operation is successful, replace operand1, operator and operand2 by result
+										if (result.coefficient != 0) {
+											// replace operand1 by result
+											list.splice(i-1, 1 ,result);
+											// remove operator and operand2
+											list.splice(j-1, 2);											
+											end -=2;
+											result = new termElement('0');
+											console.log('Result: ' + list[i-1].convertToString());
+										}
+										j+=2;
+									}
+									i+=2;									
+								}
+								else {
+									console.log('Compute: ' + list[i-1].convertToString(), list[i], list[i+1].convertToString());
+									// calculate result = operand1 operation operand2
+									result.operation(list[i-1], list[i], list[i+1]);
+									if (result.coefficient != 0) {
+										// replace operand1, operator and operand2 by result
+										list.splice(i-1,3,result);
+										end -=2;
+										console.log('Result: ' + list[i-1].convertToString());
+									}
+									else {
+										i+=2;
+									}
+								}
+							}
+							else {
+							// next operator
+							i+=2;
+							}
+						}
+					}
 				}
 			}
 		}
-		
-		function calculate() {
-			Term = new term(Input.value);
-			Term.calculate();
-			output(Term.convertToString());
 
-			// Result = new termElement('0');
-			// Operand1 = new termElement('2ac');
-			// Operand2 = new termElement('2ad');
-			// Result.operation(Operand1, '*', Operand2);
-			// output(Result.convertToString());			
-		}
-			
-		function output(string) {
-			document.getElementById("Result").innerHTML = string;
-		}		
+			function calculate() {
+				Term = new term(Input.value);
+				Term.calculate();
+				output(Term.convertToString());
+	
+				// Result = new termElement('0');
+				// Operand1 = new termElement('2ac');
+				// Operand2 = new termElement('2ad');
+				// Result.operation(Operand1, '*', Operand2);
+				// output(Result.convertToString());			
+			}
+				
+			function output(string) {
+				document.getElementById("Result").innerHTML = string;
+			}
 		</script>
 	</body>
 </html>
