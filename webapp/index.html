@@ -19,7 +19,6 @@
 // line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
 // line 228: // change to let op = 0 to process power of
 // 1-b+2b
-// 1+b-3b
 		
 		class termElement {
 			constructor(string) {
@@ -232,7 +231,10 @@
 								if (this.list[i+1].coefficient < 0) {
 									this.list[i+1].coefficient = -this.list[i+1].coefficient; 
 									string += '+';									
-								}								
+								}	
+								else {
+									string += this.list[i];									
+								}
 								break;
 							default:
 								string += this.list[i];
