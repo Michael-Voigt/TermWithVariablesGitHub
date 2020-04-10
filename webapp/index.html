@@ -18,6 +18,8 @@
 // 2abcd^2 is interpreted incorrectly as (2abcd)^2 = 4a^2b^2c^2d^2
 // line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
 // line 228: // change to let op = 0 to process power of
+// 1-b+2b*2b+2b+3*(a+2a) = 1+b-4b^2-9a
+// correct is			 = 1+b-4b^2+9a
 
 		class termElement {
 			constructor(string) {
@@ -221,8 +223,11 @@
 						switch(this.list[i]) {
 							// turn +- into -
 							case '+':
-								if (this.list[i+1].coefficient > 0) {
+								if (this.list[i+1].coefficient < 0) {
 									string += '-';									
+								}
+								else {
+									string += this.list[i];									
 								}
 								break;
 							// turn -- into +
