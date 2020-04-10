@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="1+b-3b"></p>
+		<p>Term <input type="Term" id="Input" value="1-b+2b"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -18,8 +18,7 @@
 // 2abcd^2 is interpreted incorrectly as (2abcd)^2 = 4a^2b^2c^2d^2
 // line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
 // line 228: // change to let op = 0 to process power of
-// 1-b+2b
-		
+
 		class termElement {
 			constructor(string) {
 				this.coefficient = 0;
@@ -320,9 +319,21 @@
 									// add all operands in list
 									let j = i + 1;
 									while (j <= end) {
-										console.log('Add i=' + i + ': ' + list[i-1].convertToString() + ' j=' + j + ': ' + list[j].convertToString());
-										// calculate result = operand1 operation operand2
-										result.operation(list[i-1], list[j-1], list[j]);
+										console.log('Try adding / substracting i=' + i + ': ' + list[i-1].convertToString() + '   j=' + j + ': ' + list[j].convertToString());
+										if (i > 1 && list[i-2] =='-') {
+											// if op1 == - than turn op2 from - to +
+											if (list[j-1] == '-') {
+												result.operation(list[i-1], '+', list[j]);												
+											}
+											// if op1 == - than turn op2 from + to -
+											else {
+												result.operation(list[i-1], '-', list[j]);													
+											}
+										}
+										else {
+											// calculate result = operand1 operation operand2
+											result.operation(list[i-1], list[j-1], list[j]);
+										}
 										// if operation is successful, replace operand1, operator and operand2 by result
 										if (result.coefficient != 0) {
 											// replace operand1 by result
