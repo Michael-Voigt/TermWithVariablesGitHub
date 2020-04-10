@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="a+b+a+c+a"></p>
+		<p>Term <input type="Term" id="Input" value="1+b-3b"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -18,6 +18,8 @@
 // 2abcd^2 is interpreted incorrectly as (2abcd)^2 = 4a^2b^2c^2d^2
 // line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
 // line 228: // change to let op = 0 to process power of
+// 1-b+2b
+// 1+b-3b
 		
 		class termElement {
 			constructor(string) {
@@ -218,10 +220,26 @@
 				let string = [];
 				for (let i=0; i < this.list.length; i++) {
 					if (typeof(this.list[i])=='string') {
-						string += this.list[i];
+						switch(this.list[i]) {
+							// turn +- into -
+							case '+':
+								if (this.list[i+1].coefficient > 0) {
+									string += '-';									
+								}
+								break;
+							// turn -- into +
+							case '-':
+								if (this.list[i+1].coefficient < 0) {
+									this.list[i+1].coefficient = -this.list[i+1].coefficient; 
+									string += '+';									
+								}								
+								break;
+							default:
+								string += this.list[i];
+						}
 					}
 					else {
-						string += this.list[i].convertToString();
+						string += this.list[i].convertToString();								
 					}
 				}
 				return(string);
