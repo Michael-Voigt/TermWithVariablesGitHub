@@ -6,20 +6,25 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="1-b+2b"></p>
+		<p>Term <input type="Term" id="Input" value="a*(b+2c)+1" size="50"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
 		<p id="Result"></p>
 		<script>
 
+// examples
+// 7^2+a^2*a^2+1-b+2b*2b+2b+3*(a+2a) = 50+a^4+b+4b^2+9a
+
 // Open Issues:
 // Parser: no exponents for variables
 // 2abcd^2 is interpreted incorrectly as (2abcd)^2 = 4a^2b^2c^2d^2
 // line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
 // line 228: // change to let op = 0 to process power of
-// 1-b+2b*2b+2b+3*(a+2a) = 1+b-4b^2-9a
-// correct is			 = 1+b-4b^2+9a
+
+// (a+b)*(c+d)*(e+f) = (ac+ad+bc+bd)*(e+f)
+// y+a*(b+c)+x
+// y+(a+b)*c+x
 
 		class termElement {
 			constructor(string) {
@@ -262,9 +267,19 @@
 					while (i < List.length && List[i]!=')') {
 						if (List[i] == '(') { 
 							compute_brackets(List, i+1);
-							// remove brackets
-							List.splice(i+2, 1);
-							List.splice(i,1);						
+							// remove brackets if only one operand in brackets
+							if (List[i+2] == ')') {
+								List.splice(i+2, 1);
+								List.splice(i,1);	
+							}
+							else {
+								// find next closing bracket
+								while (i < List.length && List[i]!=')') {
+									i++;
+								}
+								// skip over next closing bracket
+								i++;
+							}
 						}
 						i++;
 					}
@@ -307,19 +322,21 @@
 				}	
 
 				function compute_operators(list, start, end) {
-	
+					expand_brackets(list, start, end);
+					
 					// excution order: power of, multiplying / deviding, plus / minus			
 					let operators = [RegExp('\^'), RegExp('[\/\*]'), RegExp('[+-]')];
 		
-					// change to let op = 0 to process power of
-					for (let op = 1; op < operators.length; op++){
+					for (let op = 0; op < operators.length; op++){
 						// start with first operator
 						let i = start + 1;
 						
 						while (i < end){
 							let result = new termElement('0');
 							// execute only operators selected by parameter operators
-							if (operators[op].test(list[i])) {
+//							if (operators[op].test(list[i])) {
+							if ((operators[op].test(list[i]) && op > 0) ||
+								(list[i] == '^' && op == 0)) {
 								if (op == 2) {
 									// add all operands in list
 									let j = i + 1;
@@ -374,6 +391,62 @@
 							// next operator
 							i+=2;
 							}
+						}
+					}
+				}
+				
+				function expand_brackets(list, start, end) {
+					let i = start;
+					let openingBracket1 = -1;
+					let closingBracket1 = -1;
+					let openingBracket2 = -1;
+					let closingBracket2 = -1;
+
+// (a+b)*(c+d)*(e+f) = (ac+ad+bc+bd)*(e+f)
+// y+a*(b+c)+x
+// y+(a+b)*c+x
+					while (i < end) {
+						while (i < end && list[i]!='(') {
+							i++;
+						}
+						if (list[i]=='(') {
+							if (start <= i-2 && list[i-1] == '*') {						
+								if (start <= i-2 && list[i-2] == ')') {
+									// found )*( in (a+b)*(c+d)
+									openingBracket2 = i;
+									closingBracket1 = i-2;									
+								}
+								else {
+									// found a*( in a*(b+c)						
+									openingBracket1 = i-2;
+									closingBracket1 = i-2;
+									openingBracket2 = i;									
+								}
+							}
+							else {
+								openingBracket1 = i;	
+							}
+						}
+						while (i < end && list[i]!=')') {
+							i++;
+						}
+						if (list[i]==')') {
+							if (closingBracket1 == -1) {
+								closingBracket1 = i;
+								if (i+2 <= end && list[i+1]=='*' && list[i+2] != '(') {
+									// found )*c in y+(a+b)*c
+									openingBracket2 = i+2;
+									closingBracket2 = i+2;
+									i+=2;
+								}
+							}
+							else {
+								closingBracket2 = i;
+							}
+						}
+						if (closingBracket2 !=-1) {
+							console.log('openingBracket1: ' + openingBracket1 + ' closingBracket1: ' + closingBracket1);
+							console.log('openingBracket2: ' + openingBracket2 + ' closingBracket2: ' + closingBracket2);
 						}
 					}
 				}
