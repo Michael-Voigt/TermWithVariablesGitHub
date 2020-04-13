@@ -322,7 +322,7 @@
 				}	
 
 				function compute_operators(list, start, end) {
-					expand_brackets(list, start, end);
+					end = expand_brackets(list, start, end);
 					
 					// excution order: power of, multiplying / deviding, plus / minus			
 					let operators = [RegExp('\^'), RegExp('[\/\*]'), RegExp('[+-]')];
@@ -461,8 +461,10 @@
 									result.operation(list[bracket1], '*', list[bracket2]);	
 									console.log('Result: ' + result.convertToString());
 									list.splice(closingBracket2+2,0,result);
+									end++;
 									if (bracket1 != openingBracket1 || bracket2 != openingBracket2) {
 										list.splice(closingBracket2+3,0,'+');
+										end++;
 									}
 									bracket2+=2;
 								}
@@ -479,6 +481,7 @@
 								openingBracket2++;
 							}		
 							list.splice(openingBracket1, openingBracket2 - openingBracket1 + 3);
+							end-=openingBracket2 - openingBracket1 + 3;
 							
 							// reset brackets
 							openingBracket1 = -1;
@@ -487,7 +490,7 @@
 							closingBracket2 = -1;
 						}							
 					}
-//					return(end);
+					return(end);
 				}
 			}
 		}
