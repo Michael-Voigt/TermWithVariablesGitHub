@@ -454,12 +454,25 @@
 
 							let bracket1 = openingBracket1;
 							let bracket2 = openingBracket2;
+							let sign1 = '+';
+							let sign2 = '+';
 							while (bracket1 <= closingBracket1) {
 								bracket2 = openingBracket2;	
+								sign2 = '+';
 								while (bracket2 <= closingBracket2) {
+
 									// expand brackets	
 									let result = new termElement('0');
 									result.operation(list[bracket1], '*', list[bracket2]);	
+									if (bracket1!=openingBracket1) {
+										sign1 = list[bracket1 - 1];
+									}
+									if (bracket2!=openingBracket2) {
+										sign2 = list[bracket2 - 1];
+									}
+									if ((sign1 == '+' && sign2 == '-') || (sign1 == '-' && sign2 == '+')) {
+										result.coefficient = - result.coefficient;
+									}
 									console.log('Result: ' + result.convertToString());
 									// determine position to insert result
 									if (openingBracket2 == closingBracket2 ) {
