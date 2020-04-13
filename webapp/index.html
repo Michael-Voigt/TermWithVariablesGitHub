@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="1+a*(b+2c)+1" size="50"></p>
+		<p>Term <input type="Term" id="Input" value="y+a*(b+c)+x" size="50"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -425,7 +425,7 @@
 								}
 							}
 							else {
-								openingBracket1 = i-1;	
+								openingBracket1 = i+1;	
 							}
 						}
 						while (i < end && list[i]!=')') {
@@ -455,15 +455,30 @@
 							let bracket1 = openingBracket1;
 							let bracket2 = openingBracket2;
 							while (bracket1 <= closingBracket1) {
+								bracket2 = openingBracket2;	
 								while (bracket2 <= closingBracket2) {
 									// expand brackets	
 									let result = new termElement('0');
 									result.operation(list[bracket1], '*', list[bracket2]);	
 									console.log('Result: ' + result.convertToString());
-									list.splice(closingBracket2+2,0,result);
+									// determine position to insert result
+									if (openingBracket2 == closingBracket2 ) {
+										// no closing bracket
+										list.splice(closingBracket2+1,0,result);	
+									}
+									else {
+										list.splice(closingBracket2+2,0,result);
+									}
 									end++;
 									if (bracket1 != openingBracket1 || bracket2 != openingBracket2) {
-										list.splice(closingBracket2+3,0,'+');
+										// determine position to insert +
+										if (openingBracket2 == closingBracket2 ) {
+											// no closing bracket
+											list.splice(closingBracket2+2,0,'+');	
+										}
+										else {
+											list.splice(closingBracket2+3,0,'+');
+										}
 										end++;
 									}
 									bracket2+=2;
@@ -478,11 +493,10 @@
 								openingBracket1--;
 							}
 							if (openingBracket2 != closingBracket2) {
-								openingBracket2++;
+								closingBracket2++;
 							}		
-							list.splice(openingBracket1, openingBracket2 - openingBracket1 + 3);
-							end-=openingBracket2 - openingBracket1 + 3;
-							
+							list.splice(openingBracket1, closingBracket2 - openingBracket1 + 1);
+							end-=closingBracket2 - openingBracket1 + 1;							
 							// reset brackets
 							openingBracket1 = -1;
 							closingBracket1 = -1;
@@ -499,12 +513,6 @@
 				Term = new term(Input.value);
 				Term.calculate();
 				output(Term.convertToString());
-	
-				// Result = new termElement('0');
-				// Operand1 = new termElement('2ac');
-				// Operand2 = new termElement('2ad');
-				// Result.operation(Operand1, '*', Operand2);
-				// output(Result.convertToString());			
 			}
 				
 			function output(string) {
