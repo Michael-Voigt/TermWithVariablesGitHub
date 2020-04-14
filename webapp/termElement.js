@@ -138,29 +138,31 @@
 						break;
 					case '+':
 					case '-':
-						if (operand1.variableList.length == operand2.variableList.length) {
-							// variables and exponents of operand1 and operand2 are the same?
-							let varExEqual = true;
-							let i = 0;
-							while (i < operand1.variableList.length && varExEqual) {
-								varExEqual = (operand1.variableList[i] == operand2.variableList[i] &&
-										   operand1.exponentList[i] == operand2.exponentList[i]);
-								i++;
+						let varExEqual = (operand1.variableList.length == operand2.variableList.length);
+						// variables and exponents of operand1 and operand2 are the same?
+						let i = 0;
+						while (i < operand1.variableList.length && varExEqual) {
+							varExEqual = (operand1.variableList[i] == operand2.variableList[i] &&
+									   operand1.exponentList[i] == operand2.exponentList[i]);
+							i++;
+						}
+						// variables and exponents of operand1 and operand2 are the same => calculate result
+						if (varExEqual) {
+							if (operation == '+') {
+								this.coefficient = operand1.coefficient + operand2.coefficient;
 							}
-							// variables and exponents of operand1 and operand2 are the same => calculate result
-							if (varExEqual) {
-								if (operation == '+') {
-									this.coefficient = operand1.coefficient + operand2.coefficient;
-								}
-								else {
-									this.coefficient = operand1.coefficient - operand2.coefficient;
-								}
-								// copy variables and exponents to result
-								for (let h = 0; h < operand1.variableList.length; h++) {
-									this.variableList.push(operand1.variableList[h]);
-									this.exponentList.push(operand1.exponentList[h]);
-								}
+							else {
+								this.coefficient = operand1.coefficient - operand2.coefficient;
 							}
+							// copy variables and exponents to result
+							for (let h = 0; h < operand1.variableList.length; h++) {
+								this.variableList.push(operand1.variableList[h]);
+								this.exponentList.push(operand1.exponentList[h]);
+							}
+						}
+						else {
+						// operands can't be added / subtracted -> set coefficient = null
+							this.coefficient = null;
 						}
 						break;
 				}

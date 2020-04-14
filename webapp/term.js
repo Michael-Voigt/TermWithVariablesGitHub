@@ -11,7 +11,6 @@
 				for (i = 0; i < l; i++) {
 					if (regex.test(input[i])) {
 						if (i!=j) {
-//							this.list.push(input.substring(j, i));
 							this.list.push(new termElement(input.substring(j, i)));
 						}
 						this.list.push(input[i]);
@@ -19,7 +18,6 @@
 					}
 				}
 				if (i!=j) {
-//					list.push(Number(input.substring(j, l)));
 					this.list.push(new termElement(input.substring(j, l)));
 				}
 			}
@@ -89,41 +87,6 @@
 					compute_operators(List, start, i-1);
 				}
 				
-				function compute_operators_old(list, start, end) {
-
-					// excution order: power of, multiplying / deviding, plus / minus			
-					let operators = [RegExp('\^'), RegExp('[\/\*]'), RegExp('[+-]')];
-		
-					// change to let op = 0 to process power of
-					for (let op = 1; op < operators.length; op++){
-						// start with first operator
-						let i = start+1;
-						
-						while (i<end){
-							let result = new termElement('0');
-							// execute only operators selected by parameter operators
-							if (operators[op].test(list[i])) {
-								console.log('Compute: ' + list[i-1].convertToString(), list[i], list[i+1].convertToString());
-								// calculate result = operand1 operation operand2
-								result.operation(list[i-1], list[i], list[i+1]);
-								if (result.coefficient != 0) {
-									// replace operand1, operator and operand2 by result
-									list.splice(i-1,3,result);
-									end -=2;
-									console.log('Result: ' + list[i-1].convertToString());
-								}
-								else {
-									i+=2;
-								}
-							}
-							else {
-							// next operator
-							i+=2;
-							}
-						}
-					}
-				}	
-
 				function compute_operators(list, start, end) {
 					end = expand_brackets(list, start, end);
 					
@@ -160,7 +123,7 @@
 											result.operation(list[i-1], list[j-1], list[j]);
 										}
 										// if operation is successful, replace operand1, operator and operand2 by result
-										if (result.coefficient != 0) {
+										if (result.coefficient != null) {
 											// replace operand1 by result
 											list.splice(i-1, 1 ,result);
 											// remove operator and operand2
@@ -179,7 +142,7 @@
 									console.log('Compute: ' + list[i-1].convertToString(), list[i], list[i+1].convertToString());
 									// calculate result = operand1 operation operand2
 									result.operation(list[i-1], list[i], list[i+1]);
-									if (result.coefficient != 0) {
+									if (result.coefficient != null) {
 										// replace operand1, operator and operand2 by result
 										list.splice(i-1,3,result);
 										end -=2;
