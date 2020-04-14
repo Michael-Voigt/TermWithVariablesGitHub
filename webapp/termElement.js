@@ -27,6 +27,13 @@
 				}
 				// sort variables works only if all exponents = 1
 				this.variableList.sort();
+				for (let j = 1; j < this.variableList.length; j++) {
+					if (this.variableList[j-1] == this.variableList[j]) {
+						this.variableList.splice(j,1);
+						this.exponentList.splice(j,1);
+						this.exponentList[j-1]+=1;
+					}
+				}
 			}
 			
 			convertToString() {
