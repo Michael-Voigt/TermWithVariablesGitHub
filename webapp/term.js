@@ -257,6 +257,7 @@
 
 							let bracket1 = openingBracket1;
 							let bracket2 = openingBracket2;
+							let insert = 0;
 							let sign1 = '+';
 							let sign2 = '+';
 							while (bracket1 <= closingBracket1) {
@@ -285,7 +286,7 @@
 									else {
 										list.splice(closingBracket2+2,0,result);
 									}
-									end++;
+									insert++;
 									if (bracket1 != openingBracket1 || bracket2 != openingBracket2) {
 										// determine position to insert +
 										if (openingBracket2 == closingBracket2 ) {
@@ -295,7 +296,7 @@
 										else {
 											list.splice(closingBracket2+3,0,'+');
 										}
-										end++;
+										insert++;
 									}
 									bracket2+=2;
 								}
@@ -310,14 +311,34 @@
 							}
 							if (openingBracket2 != closingBracket2) {
 								closingBracket2++;
-							}		
+							}
+							end+=insert;
 							list.splice(openingBracket1, closingBracket2 - openingBracket1 + 1);
-							end-=closingBracket2 - openingBracket1 + 1;							
+							end-=closingBracket2 - openingBracket1 + 1;	
+							
+							// start: openingBracket1
+							// end: openingBracket1 + insert
+
+							i = openingBracket1 + insert;
+							
+							// if next operation is * than insert opening and closing bracket
+							if (list[i] =='*') {
+								list.splice(i,0,')');
+								list.splice(openingBracket1,0,'(');
+								i+=2;
+								end+=2;
+								openingBracket1++;
+								closingBracket1 = i-2; 
+								openingBracket2 = -1;
+								closingBracket2 = -1;								
+							}
+							else {
 							// reset brackets
-							openingBracket1 = -1;
-							closingBracket1 = -1;
-							openingBracket2 = -1;
-							closingBracket2 = -1;
+								openingBracket1 = -1;
+								closingBracket1 = -1;
+								openingBracket2 = -1;
+								closingBracket2 = -1;
+							}
 						}							
 					}
 					return(end);
