@@ -168,7 +168,6 @@
 					let openingBracket2 = -1;
 					let closingBracket2 = -1;
 
-// (a+b)*(c+d)*(e+f) = (ac+ad+bc+bd)*(e+f)
 // y+a*(b+c)+x
 // y+(a+b)*c+x
 					while (i < end) {

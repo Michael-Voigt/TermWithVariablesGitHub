@@ -1,6 +1,6 @@
 		class termElement {
 			constructor(string) {
-				this.coefficient = 0;
+				this.coefficient = 1;
 				this.exponentList = [];
 				this.variableList = [];
 				
@@ -14,7 +14,9 @@
 				while (i<l && number.test(string[i])) {
 					i++;
 				}
-				this.coefficient = Number(string.substring(0, i))	
+				if (i > 0) {
+					this.coefficient = Number(string.substring(0, i))
+				}
 				
 				// Determine variables
 				let v = i;
@@ -25,12 +27,8 @@
 				}
 				// sort variables works only if all exponents = 1
 				this.variableList.sort();
-				// coefficient = 1 for variables without coefficient
-				if (this.coefficient == 0 && this.variableList.length > 0){
-					this.coefficient = 1;
-				}
-				
 			}
+			
 			convertToString() {
 				let string = [];
 				// if there are no variables, always output coefficient
@@ -139,33 +137,58 @@
 						break;
 					case '+':
 					case '-':
-						let varExEqual = (operand1.variableList.length == operand2.variableList.length);
-						// variables and exponents of operand1 and operand2 are the same?
-						let i = 0;
-						while (i < operand1.variableList.length && varExEqual) {
-							varExEqual = (operand1.variableList[i] == operand2.variableList[i] &&
-									   operand1.exponentList[i] == operand2.exponentList[i]);
-							i++;
-						}
-						// variables and exponents of operand1 and operand2 are the same => calculate result
-						if (varExEqual) {
+						// if operand1 = 0 than result = operand2 for + / -operand2 for -
+						if (operand1.coefficient==0) {
 							if (operation == '+') {
-								this.coefficient = operand1.coefficient + operand2.coefficient;
+								this.coefficient = operand2.coefficient;
 							}
 							else {
-								this.coefficient = operand1.coefficient - operand2.coefficient;
+								this.coefficient = -operand2.coefficient;
 							}
-							// if coefficient!=0 than copy variables and exponents to result
-							if (this.coefficient!=0) {
-								for (let h = 0; h < operand1.variableList.length; h++) {
-									this.variableList.push(operand1.variableList[h]);
-									this.exponentList.push(operand1.exponentList[h]);
-								}
+							// copy variables and exponents of operand2 to result
+							for (let h = 0; h < operand2.variableList.length; h++) {
+								this.variableList.push(operand2.variableList[h]);
+								this.exponentList.push(operand2.exponentList[h]);
 							}
 						}
+						// if operand2 = 0 than result = operand1-
+						else if (operand2.coefficient==0) {
+							this.coefficient = operand1.coefficient;
+							// copy variables and exponents of operand1 to result
+							for (let h = 0; h < operand1.variableList.length; h++) {
+								this.variableList.push(operand1.variableList[h]);
+								this.exponentList.push(operand1.exponentList[h]);
+							}
+						} 
 						else {
-						// operands can't be added / subtracted -> set coefficient = null
-							this.coefficient = null;
+							let varExEqual = (operand1.variableList.length == operand2.variableList.length);
+							// variables and exponents of operand1 and operand2 are the same?
+							let i = 0;
+							while (i < operand1.variableList.length && varExEqual) {
+								varExEqual = (operand1.variableList[i] == operand2.variableList[i] &&
+										   operand1.exponentList[i] == operand2.exponentList[i]);
+								i++;
+							}
+							// variables and exponents of operand1 and operand2 are the same => calculate result
+							if (varExEqual) {
+								if (operation == '+') {
+									this.coefficient = operand1.coefficient + operand2.coefficient;
+								}
+								else {
+									this.coefficient = operand1.coefficient - operand2.coefficient;
+								}
+								// if coefficient!=0 than copy variables and exponents to result
+								if (this.coefficient!=0) {
+									for (let h = 0; h < operand1.variableList.length; h++) {
+										this.variableList.push(operand1.variableList[h]);
+										this.exponentList.push(operand1.exponentList[h]);
+									}
+								}
+							}
+							else {
+							// operands can't be added / subtracted -> set coefficient = null
+								this.coefficient = null;
+							}
 						}
 						break;
 				}
