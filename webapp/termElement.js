@@ -90,49 +90,50 @@
 						else {
 							this.coefficient = operand1.coefficient / operand2.coefficient;	
 						}
-		
-						let i1 = 0;
-						let i2 = 0;
-						while (i1 < operand1.variableList.length && i2 < operand2.variableList.length) {
-							// same variable -> add / substract exponents
-							if (operand1.variableList[i1] == operand2.variableList[i2]) {
-								this.variableList.push(operand1.variableList[i1]);
-								if (operation =='*') {
-									this.exponentList.push(operand1.exponentList[i1] + operand2.exponentList[i2]);
+						if (this.coefficient!=0) {
+							let i1 = 0;
+							let i2 = 0;
+							while (i1 < operand1.variableList.length && i2 < operand2.variableList.length) {
+								// same variable -> add / substract exponents
+								if (operand1.variableList[i1] == operand2.variableList[i2]) {
+									this.variableList.push(operand1.variableList[i1]);
+									if (operation =='*') {
+										this.exponentList.push(operand1.exponentList[i1] + operand2.exponentList[i2]);
+									}
+									else {
+										this.exponentList.push(operand1.exponentList[i1] - operand2.exponentList[i2]);
+									}
+									i1++;
+									i2++;
+								} 
+								// copy variable of operand1
+								else if (operand1.variableList[i1] < operand2.variableList[i2]) {
+									this.variableList.push(operand1.variableList[i1]);
+									this.exponentList.push(operand1.exponentList[i1]);
+									i1++;
 								}
+								// copy variable of operand2
 								else {
-									this.exponentList.push(operand1.exponentList[i1] - operand2.exponentList[i2]);
+									this.variableList.push(operand2.variableList[i2]);
+									this.exponentList.push(operand2.exponentList[i2]);
+									i2++;
 								}
-								i1++;
-								i2++;
-							} 
-							// copy variable of operand1
-							else if (operand1.variableList[i1] < operand2.variableList[i2]) {
-								this.variableList.push(operand1.variableList[i1]);
-								this.exponentList.push(operand1.exponentList[i1]);
-								i1++;
 							}
-							// copy variable of operand2
+							// copy remaining variables of operand1
+							if (i2 == operand2.variableList.length) {
+								while (i1 < operand1.variableList.length) {
+									this.variableList.push(operand1.variableList[i1]);
+									this.exponentList.push(operand1.exponentList[i1]);
+									i1++;
+								}
+							}
+							// copy remaining variables of operand2
 							else {
-								this.variableList.push(operand2.variableList[i2]);
-								this.exponentList.push(operand2.exponentList[i2]);
-								i2++;
-							}
-						}
-						// copy remaining variables of operand1
-						if (i2 == operand2.variableList.length) {
-							while (i1 < operand1.variableList.length) {
-								this.variableList.push(operand1.variableList[i1]);
-								this.exponentList.push(operand1.exponentList[i1]);
-								i1++;
-							}
-						}
-						// copy remaining variables of operand2
-						else {
-							while (i2 < operand2.variableList.length) {
-								this.variableList.push(operand2.variableList[i2]);
-								this.exponentList.push(operand2.exponentList[i2]);
-								i2++;	
+								while (i2 < operand2.variableList.length) {
+									this.variableList.push(operand2.variableList[i2]);
+									this.exponentList.push(operand2.exponentList[i2]);
+									i2++;	
+								}
 							}
 						}
 						break;
@@ -154,10 +155,12 @@
 							else {
 								this.coefficient = operand1.coefficient - operand2.coefficient;
 							}
-							// copy variables and exponents to result
-							for (let h = 0; h < operand1.variableList.length; h++) {
-								this.variableList.push(operand1.variableList[h]);
-								this.exponentList.push(operand1.exponentList[h]);
+							// if coefficient!=0 than copy variables and exponents to result
+							if (this.coefficient!=0) {
+								for (let h = 0; h < operand1.variableList.length; h++) {
+									this.variableList.push(operand1.variableList[h]);
+									this.exponentList.push(operand1.exponentList[h]);
+								}
 							}
 						}
 						else {
