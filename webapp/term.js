@@ -169,6 +169,7 @@ class term {
 			let openingBracket2 = -1;
 			let closingBracket2 = -1;
 			let operators = RegExp('[\/\*+-]');
+			let opMultiplyDivide = RegExp('[\/\*]');
 
 // y+a*(b+c)+x
 // y+(a+b)*c+x
@@ -202,7 +203,7 @@ class term {
 				if (list[i]==')') {
 					if (closingBracket1 == -1) {
 						closingBracket1 = i-1;
-						if (i+2 <= end && list[i+1]=='*' && list[i+2] != '(') {
+						if (i+2 <= end && operators.test(list[i+1]) && list[i+2] != '(') {
 							// found )*c in y+(a+b)*c
 							operator = list[i+1];
 							openingBracket2 = i+2;
@@ -270,7 +271,7 @@ class term {
 		
 									// expand brackets	
 									let result = new termElement('0');
-									result.operation(list[bracket1], '*', list[bracket2]);	
+									result.operation(list[bracket1], operator, list[bracket2]);	
 									if (bracket1!=openingBracket1) {
 										sign1 = list[bracket1 - 1];
 									}
@@ -324,19 +325,21 @@ class term {
 		
 							i = openingBracket1 + insert;
 							
-							// if next operation is * than insert opening and closing bracket
-							if (list[i] =='*') {
+							// if next operation is * or / than insert opening and closing bracket
+							if (opMultiplyDivide.test(list[i])) {
 								list.splice(i,0,')');
 								list.splice(openingBracket1,0,'(');
-								i+=2;
 								end+=2;
-								openingBracket1++;
-								closingBracket1 = i-2; 
+								// continue processing at the first opening bracket
+								i = openingBracket1;
+								// reset brackets
+								openingBracket1 = -1;
+								closingBracket1 = -1;								
 								openingBracket2 = -1;
 								closingBracket2 = -1;								
 							}
 							else {
-							// reset brackets
+								// reset brackets
 								openingBracket1 = -1;
 								closingBracket1 = -1;
 								openingBracket2 = -1;
