@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="y+a*(b+c)+x" size="50"></p>
+		<p>Term <input type="Term" id="Input" value="(a+b)+b" size="50"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -31,6 +31,15 @@
 // correct:  = 3bx+3ax
 // (a+b)*b-(a+b)*b = 0+2ab
 // correct:        = 0 => - before bracket is ignored
+//
+// (a+b)-(a+b) = -b+b
+// correct     = 0
+// issue in compute_operators: a in pos 0 is replaced by b in pos because of 0 + b, afterwards b at pos 0 is not processed again beacuse pos 0 has already been processed
+// Try adding / substracting i-1=0: a   j=2: b
+// term.js:110 Try adding / substracting i-1=0: a   j=4: a
+// term.js:133 Result: 0
+// term.js:110 Try adding / substracting i-1=0: 0   j=4: b
+
 
 			function calculate() {
 				Term = new term(Input.value);
