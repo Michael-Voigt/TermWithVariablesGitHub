@@ -103,15 +103,19 @@ class termElement {
 				if (this.coefficient!=0) {
 					let i1 = 0;
 					let i2 = 0;
+					let exponentResult = 0;
 					while (i1 < operand1.variableList.length && i2 < operand2.variableList.length) {
 						// same variable -> add / substract exponents
 						if (operand1.variableList[i1] == operand2.variableList[i2]) {
-							this.variableList.push(operand1.variableList[i1]);
 							if (operation =='*') {
-								this.exponentList.push(operand1.exponentList[i1] + operand2.exponentList[i2]);
+								exponentResult = operand1.exponentList[i1] + operand2.exponentList[i2];
 							}
 							else {
-								this.exponentList.push(operand1.exponentList[i1] - operand2.exponentList[i2]);
+								exponentResult = operand1.exponentList[i1] - operand2.exponentList[i2];
+							}
+							if (exponentResult != 0) {
+								this.variableList.push(operand1.variableList[i1]);
+								this.exponentList.push(exponentResult);
 							}
 							i1++;
 							i2++;
