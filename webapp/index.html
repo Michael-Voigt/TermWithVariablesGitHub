@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="(4a+4b)/2" size="50"></p>
+		<p>Term <input type="Term" id="Input" value="(a-b)*c-(a-b)*c" size="50"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -40,6 +40,7 @@
 // term.js:133 Result: 0
 // term.js:110 Try adding / substracting i-1=0: 0   j=4: b
 
+// (a-b)*c*d = acd--bcd => double -- is incorrect
 
 			function calculate() {
 				Term = new term(Input.value);

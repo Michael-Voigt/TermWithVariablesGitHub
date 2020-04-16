@@ -29,10 +29,9 @@ class term {
 				switch(this.list[i]) {
 					// turn +- into -
 					case '+':
-						if (this.list[i+1].coefficient < 0) {
-							string += '-';									
-						}
-						else {
+						if (this.list[i+1].coefficient >= 0) {
+							// add + only coefficient >= 0
+							// if coefficient < 0 the - comes from convertToString of termElement
 							string += this.list[i];									
 						}
 						break;
@@ -161,18 +160,19 @@ class term {
 			}
 		}
 		
-		function expand_brackets(list, start, end) {
+		function expand_brackets_old(list, start, end) {
 			let operator ='';
-			let i = start;
 			let openingBracket1 = -1;
 			let closingBracket1 = -1;
 			let openingBracket2 = -1;
 			let closingBracket2 = -1;
 			let operators = RegExp('[\/\*+-]');
+//			let operators = RegExp('[\/\*]');
 			let opMultiplyDivide = RegExp('[\/\*]');
 
 // y+a*(b+c)+x
 // y+(a+b)*c+x
+			let i = start;
 			while (i < end) {
 				// try to find brackets
 				while (i < end && list[i]!='(') {
@@ -213,6 +213,7 @@ class term {
 					}
 					else {
 						closingBracket2 = i-1;
+//						operator = list[i+1]
 					}
 				}
 				// if brackets found, expand them
@@ -264,12 +265,25 @@ class term {
 							let insert = 0;
 							let sign1 = '+';
 							let sign2 = '+';
+							// let signBeforeBracket ='+';
+							// // check if the sign before bracket2 is a minus
+							// if (openingBracket1==closingBracket1) {
+							// 	if (list[openingBracket1 - 1] =='-') {
+							// 		signBeforeBracket='-';	
+							// 	}								
+							// }
+							// else {
+							// 	if (list[openingBracket1 - 2] =='-') {
+							// 		signBeforeBracket='-';	
+							// 	}									
+							// }
+
+							// expand brackets	
+
 							while (bracket1 <= closingBracket1) {
 								bracket2 = openingBracket2;	
 								sign2 = '+';
 								while (bracket2 <= closingBracket2) {
-		
-									// expand brackets	
 									let result = new termElement('0');
 									result.operation(list[bracket1], operator, list[bracket2]);	
 									if (bracket1!=openingBracket1) {
@@ -332,22 +346,222 @@ class term {
 								end+=2;
 								// continue processing at the first opening bracket
 								i = openingBracket1;
-								// reset brackets
-								openingBracket1 = -1;
-								closingBracket1 = -1;								
-								openingBracket2 = -1;
-								closingBracket2 = -1;								
+							}
+							// reset brackets
+							openingBracket1 = -1;
+							closingBracket1 = -1;
+							openingBracket2 = -1;
+							closingBracket2 = -1;
+							break;
+					}
+				}							
+			}
+			return(end);
+		}
+		
+		function expand_brackets(list, start, end) {
+			let operator ='';
+			let openingBracket1 = -1;
+			let closingBracket1 = -1;
+			let openingBracket2 = -1;
+			let closingBracket2 = -1;
+//			let operators = [RegExp('\^'), RegExp('[\/\*]'), RegExp('[+-]')];
+			let operators = [RegExp('[\/\*]'), RegExp('[+-]')];
+			let opMultiplyDivide = RegExp('[\/\*]');
+
+			for (let op = 0; op < operators.length; op++){
+				let i = start;
+				while (i < end) {
+					// try to find brackets
+					while (i < end && list[i]!='(') {
+						i++;
+					}
+					if (list[i]=='(') {
+						if (start <= i-2 && operators[op].test(list[i-1])) {
+							operator = list[i-1];
+							if (start <= i-2 && list[i-2] == ')') {
+								// found )*( in (a+b)*(c+d)
+								openingBracket2 = i+1;
+								closingBracket1 = i-3;									
 							}
 							else {
+								// found a*( in a*(b+c)						
+								openingBracket1 = i-2;
+								closingBracket1 = i-2;
+								openingBracket2 = i+1;									
+							}
+						}
+						else {
+							openingBracket1 = i+1;	
+						}
+					}
+					while (i < end && list[i]!=')') {
+						i++;
+					}
+					if (list[i]==')') {
+						if (closingBracket1 == -1) {
+							closingBracket1 = i-1;
+							if (i+2 <= end && operators[op].test(list[i+1]) && list[i+2] != '(') {
+								// found )*c in y+(a+b)*c
+								operator = list[i+1];
+								openingBracket2 = i+2;
+								closingBracket2 = i+2;
+								i+=2;
+							}
+						}
+						else {
+							closingBracket2 = i-1;
+	//						operator = list[i+1]
+						}
+					}
+					// if brackets found, expand them
+					if (closingBracket2 !=-1) {
+						console.log('openingBracket1: ' + openingBracket1 + ' closingBracket1: ' + closingBracket1);
+						console.log('openingBracket2: ' + openingBracket2 + ' closingBracket2: ' + closingBracket2);
+	
+						// add opening bracket
+						
+						switch(operator) {
+							case '+':
+							case '-':
+								i = closingBracket2 + 2;
+								if (openingBracket2 != closingBracket2) {
+									// remove brackets								
+									if (operator == '-') {
+									  // convert - to + and + to -	
+									  for (let j = openingBracket2 + 1; j < closingBracket2; j+=2) {
+									  	if (list[j] == '+') {
+									  		list[j] = '-';
+									  	}
+									  	else if (list[j] == '-') {
+									  		list[j] = '+';
+									  	}
+									  }
+									}
+									list.splice(closingBracket2 + 1, 1);
+									list.splice(openingBracket2 - 1, 1);
+									i-=2;
+									end-=2;
+								}
+								if (openingBracket1 != closingBracket1) {
+									// remove brackets
+									list.splice(closingBracket1 + 1, 1);
+									list.splice(openingBracket1 - 1, 1);
+									i-=2;
+									end-=2;
+								}
 								// reset brackets
 								openingBracket1 = -1;
 								closingBracket1 = -1;
 								openingBracket2 = -1;
 								closingBracket2 = -1;
-							}
-							break;
-					}
-				}							
+								break;
+							case '*':
+							case '/':
+								let bracket1 = openingBracket1;
+								let bracket2 = openingBracket2;
+								let insert = 0;
+								let sign1 = '+';
+								let sign2 = '+';
+								// let signBeforeBracket ='+';
+								// // check if the sign before bracket2 is a minus
+								// if (openingBracket1==closingBracket1) {
+								// 	if (list[openingBracket1 - 1] =='-') {
+								// 		signBeforeBracket='-';	
+								// 	}								
+								// }
+								// else {
+								// 	if (list[openingBracket1 - 2] =='-') {
+								// 		signBeforeBracket='-';	
+								// 	}									
+								// }
+	
+								// expand brackets	
+	
+								while (bracket1 <= closingBracket1) {
+									bracket2 = openingBracket2;	
+									sign2 = '+';
+									while (bracket2 <= closingBracket2) {
+										let result = new termElement('0');
+										result.operation(list[bracket1], operator, list[bracket2]);	
+										if (bracket1!=openingBracket1) {
+											sign1 = list[bracket1 - 1];
+										}
+										if (bracket2!=openingBracket2) {
+											sign2 = list[bracket2 - 1];
+										}
+										if ((sign1 == '+' && sign2 == '-') || (sign1 == '-' && sign2 == '+')) {
+											result.coefficient = - result.coefficient;
+										}
+										console.log('Result: ' + result.convertToString());
+										// determine position to insert result
+										if (openingBracket2 == closingBracket2 ) {
+											// no closing bracket
+											list.splice(closingBracket2+1,0,result);	
+										}
+										else {
+											list.splice(closingBracket2+2,0,result);
+										}
+										insert++;
+										if (bracket1 != openingBracket1 || bracket2 != openingBracket2) {
+											// determine position to insert +
+											if (openingBracket2 == closingBracket2 ) {
+												// no closing bracket
+												list.splice(closingBracket2+2,0,'+');	
+											}
+											else {
+												list.splice(closingBracket2+3,0,'+');
+											}
+											insert++;
+										}
+										bracket2+=2;
+									}
+									bracket1+=2;
+								}
+								
+								// add closing bracket
+								
+								// remove brackets
+								if (openingBracket1 != closingBracket1) {
+									openingBracket1--;
+								}
+								if (openingBracket2 != closingBracket2) {
+									closingBracket2++;
+								}
+								end+=insert;
+								list.splice(openingBracket1, closingBracket2 - openingBracket1 + 1);
+								end-=closingBracket2 - openingBracket1 + 1;	
+								
+								// start: openingBracket1
+								// end: openingBracket1 + insert
+			
+								i = openingBracket1 + insert;
+								
+								// if next operation is * or / than insert opening and closing bracket
+								if (opMultiplyDivide.test(list[i])) {
+									list.splice(i,0,')');
+									list.splice(openingBracket1,0,'(');
+									end+=2;
+									// continue processing at the first opening bracket
+									i = openingBracket1;
+								}
+								// if there's a - in front of the bracket than insert opening and closing bracket
+								else if (openingBracket1 > 1 && list[openingBracket1 - 1] =='-') {
+									list.splice(i,0,')');
+									list.splice(openingBracket1,0,'(');
+									end+=2;
+									i+=2;
+								}								
+
+								// reset brackets
+								openingBracket1 = -1;
+								closingBracket1 = -1;
+								openingBracket2 = -1;
+								closingBracket2 = -1;
+								break;
+						}
+					}							
+				}
 			}
 			return(end);
 		}
