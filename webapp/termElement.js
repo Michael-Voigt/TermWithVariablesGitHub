@@ -68,6 +68,17 @@ class termElement {
 		return(string);
 	}
 	
+	copy(source) {
+	//	this = new termElement('0');
+		this.coefficient = source.coefficient;
+		
+		// copy variables and exponents of operand2 to result
+		for (let h = 0; h < source.variableList.length; h++) {
+			this.variableList.push(source.variableList[h]);
+			this.exponentList.push(source.exponentList[h]);
+		}
+	}
+	
 	operation(operand1, operation, operand2) {
 		switch(operation) {
 			case '^':

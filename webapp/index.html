@@ -6,7 +6,7 @@
 		<title>Auswerterich</title>
 	</head>
 	<body>
-		<p>Term <input type="Term" id="Input" value="3*x*(a+b)" size="50"></p>
+		<p>Term <input type="Term" id="Input" value="(a+b)^2" size="50"></p>
 		<br>
 		<button onclick="calculate()">Calculate</button>
 		<p>Result</p>
@@ -27,12 +27,13 @@
 // 2abcd^2 is interpreted incorrectly as (2abcd)^2 = 4a^2b^2c^2d^2
 // line 235: if (operators[op].test(list[i]))  does not work for ^ !?! -> ^ is a special character in a Regex
 
-// 3*x*(a+b) = 3bx+ax
-// correct:  = 3bx+3ax
-//
+// (3*x*(a+b))*2   => does nto work
+// ((a+b)+1)*2     => does nto work
+// (3*x*(a+b)+1)*2 = 2+6bx+6ax
+
 // (a+b)-(a+b) = -b+b
 // correct     = 0
-// issue in compute_operators: a in pos 0 is replaced by b in pos because of 0 + b, afterwards b at pos 0 is not processed again beacuse pos 0 has already been processed
+// issue in compute_operators: a in pos 0 is replaced by b in pos 0 because of 0 + b, afterwards b at pos 0 is not processed again beacuse pos 0 has already been processed
 // Try adding / substracting i-1=0: a   j=2: b
 // term.js:110 Try adding / substracting i-1=0: a   j=4: a
 // term.js:133 Result: 0
