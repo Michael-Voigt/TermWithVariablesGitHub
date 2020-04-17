@@ -551,8 +551,15 @@ class term {
 									list.splice(openingBracket1,0,'(');
 									end+=2;
 									i+=2;
-								}								
-
+								}
+								// if there's a * in front of the bracket than insert opening and closing bracket
+								else if (openingBracket1 > 1 && opMultiplyDivide.test(list[openingBracket1 - 1])) {
+									list.splice(i,0,')');
+									list.splice(openingBracket1,0,'(');
+									end+=2;
+									// continue processing before the * before the first opening bracket
+									i = openingBracket1 - 2;
+								}										
 								// reset brackets
 								openingBracket1 = -1;
 								closingBracket1 = -1;
